@@ -1,0 +1,57 @@
+.image-upload {
+  margin: 1rem 0;
+}
+
+.current-image {
+  margin-bottom: 1rem;
+}
+
+.current-image img {
+  max-width: 200px;
+  max-height: 200px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 2px solid #9B59B6;
+}
+
+.dropzone {
+  border: 2px dashed #ccc;
+  border-radius: 8px;
+  padding: 2rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background-color: #fff;
+}
+
+.dropzone:hover {
+  border-color: #9B59B6;
+  background-color: #f9f9f9;
+}
+
+.dropzone.active {
+  border-color: #9B59B6;
+  background-color: #f0e6ff;
+}
+
+.dropzone.uploading {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.dropzone p {
+  margin: 0.5rem 0;
+  color: #333;
+}
+
+.dropzone .hint {
+  font-size: 0.875rem;
+  color: #666;
+}
+
+.error {
+  color: #e74c3c;
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+}
+
