@@ -1,0 +1,14 @@
+{
+  "projects": {
+    "default": "yoga-vibe-4bdc3"
+  },
+  "targets": {
+    "yoga-vibe-4bdc3": {
+      "hosting": {
+        "admin": [
+          "yoga-vibe-admin"
+        ]
+      }
+    }
+  }
+}
