@@ -68,11 +68,6 @@ const CourseList = ({ onEdit, onCreateNew }) => {
         <div className="course-grid">
           {courses.map((course) => (
             <div key={course.id} className="course-card">
-              {course.image && (
-                <div className="course-image">
-                  <img src={course.image} alt={course.title} />
-                </div>
-              )}
               <div className="course-content">
                 <h3>{course.title}</h3>
                 <p className="course-description">{course.description}</p>

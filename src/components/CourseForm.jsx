@@ -1,11 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { createCourse, updateCourse } from '../services/courseService';
-import ImageUpload from './ImageUpload';
 import './CourseForm.css';
 
 const CourseForm = ({ course, onSave, onCancel }) => {
-  const [imageUrl, setImageUrl] = useState(course?.image || '');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
 
@@ -26,7 +24,6 @@ const CourseForm = ({ course, onSave, onCancel }) => {
   useEffect(() => {
     if (course) {
       reset(course);
-      setImageUrl(course.image || '');
     }
   }, [course, reset]);
 
@@ -37,7 +34,6 @@ const CourseForm = ({ course, onSave, onCancel }) => {
     try {
       const courseData = {
         ...data,
-        image: imageUrl || '', // Позволи празно изображение
         createdAt: course?.createdAt || new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -113,18 +109,6 @@ const CourseForm = ({ course, onSave, onCancel }) => {
             <option value="advanced">Напреднал</option>
           </select>
         </div>
-      </div>
-
-      <div className="form-group">
-        <label>Изображение</label>
-        <ImageUpload
-          currentImage={imageUrl}
-          onImageUploaded={setImageUrl}
-          folder="courses"
-        />
-        <p style={{ fontSize: '0.875rem', color: '#666', marginTop: '0.5rem' }}>
-          Опционално - можеш да добавиш изображение по-късно
-        </p>
       </div>
 
       <div className="form-actions">

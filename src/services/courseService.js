@@ -6,11 +6,10 @@ import {
   addDoc, 
   updateDoc, 
   deleteDoc,
-  query,
-  orderBy,
   Timestamp
 } from 'firebase/firestore';
 import { db } from './firebase';
+import { sendPushNotification } from './notificationService';
 
 /**
  * Get all courses
@@ -78,7 +77,20 @@ export const createCourse = async (courseData) => {
     };
     
     const docRef = await addDoc(coursesRef, newCourse);
-    return { id: docRef.id, ...newCourse };
+    const createdCourse = { id: docRef.id, ...newCourse };
+
+    try {
+      const courseTitle = courseData.title || 'Нов курс';
+      await sendPushNotification(
+        'Нов курс! 🧘‍♀️',
+        `${courseTitle} е добавен. Започнете да практикувате!`,
+        { courseId: docRef.id, type: 'new_course' }
+      );
+    } catch (notificationError) {
+      console.error('Error sending push notification:', notificationError);
+    }
+
+    return createdCourse;
   } catch (error) {
     console.error('Error creating course:', error);
     throw new Error('Грешка при създаване на курса: ' + error.message);

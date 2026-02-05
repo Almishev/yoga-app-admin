@@ -8,10 +8,10 @@ import {
   deleteDoc,
   query,
   where,
-  orderBy,
   Timestamp
 } from 'firebase/firestore';
 import { db } from './firebase';
+import { deleteImage } from './storageService';
 
 /**
  * Get all asanas
@@ -118,6 +118,23 @@ export const createAsana = async (asanaData) => {
 export const updateAsana = async (asanaId, asanaData) => {
   try {
     const asanaRef = doc(db, 'asanas', asanaId);
+    const asanaSnap = await getDoc(asanaRef);
+    
+    if (!asanaSnap.exists()) {
+      throw new Error('Асаната не съществува');
+    }
+
+    const oldAsanaData = asanaSnap.data();
+    
+    if (oldAsanaData.image && oldAsanaData.image !== asanaData.image) {
+      try {
+        await deleteImage(oldAsanaData.image);
+        console.log('Old asana image deleted from Storage');
+      } catch (imageError) {
+        console.error('Error deleting old asana image:', imageError);
+      }
+    }
+
     const updatedData = {
       ...asanaData,
       updatedAt: Timestamp.now()
@@ -137,6 +154,23 @@ export const updateAsana = async (asanaId, asanaData) => {
 export const deleteAsana = async (asanaId) => {
   try {
     const asanaRef = doc(db, 'asanas', asanaId);
+    const asanaSnap = await getDoc(asanaRef);
+    
+    if (!asanaSnap.exists()) {
+      return { success: false, error: 'Асаната не съществува' };
+    }
+
+    const asanaData = asanaSnap.data();
+    
+    if (asanaData.image) {
+      try {
+        await deleteImage(asanaData.image);
+        console.log('Asana image deleted from Storage');
+      } catch (imageError) {
+        console.error('Error deleting asana image:', imageError);
+      }
+    }
+
     await deleteDoc(asanaRef);
     return { success: true, error: null };
   } catch (error) {
