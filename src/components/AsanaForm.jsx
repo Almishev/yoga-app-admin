@@ -17,6 +17,7 @@ const AsanaForm = ({ asana, onSave, onCancel }) => {
     handleSubmit,
     formState: { errors },
     reset,
+    watch,
   } = useForm({
     defaultValues: asana || {
       name: '',
@@ -26,6 +27,12 @@ const AsanaForm = ({ asana, onSave, onCancel }) => {
       courseId: '',
     },
   });
+
+  const selectedCourseId = watch('courseId');
+  const selectedCourse = courses.find(c => c.id === selectedCourseId);
+  const isCosmoenergetics = selectedCourse?.category === 'cosmoenergetics';
+  const itemLabel = isCosmoenergetics ? 'сеанс' : 'асана';
+  const itemLabelPlural = isCosmoenergetics ? 'сеанси' : 'асани';
 
   useEffect(() => {
     const loadCourses = async () => {
@@ -91,7 +98,10 @@ const AsanaForm = ({ asana, onSave, onCancel }) => {
 
       onSave();
     } catch (err) {
-      setError(err.message || 'Грешка при запазване на асаната');
+      const errorMessage = isCosmoenergetics 
+        ? `Грешка при запазване на сеанса: ${err.message}` 
+        : `Грешка при запазване на асаната: ${err.message}`;
+      setError(err.message || errorMessage);
       console.error('Save error:', err);
     } finally {
       setSaving(false);
@@ -100,7 +110,7 @@ const AsanaForm = ({ asana, onSave, onCancel }) => {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="asana-form">
-      <h2>{asana ? 'Редактиране на асана' : 'Създаване на нова асана'}</h2>
+      <h2>{asana ? `Редактиране на ${itemLabel}` : `Създаване на нов ${itemLabel}`}</h2>
 
       {error && <div className="error-message">{error}</div>}
 
@@ -171,6 +181,7 @@ const AsanaForm = ({ asana, onSave, onCancel }) => {
           id="executionTime"
           type="number"
           min="0"
+          placeholder={isCosmoenergetics ? "2700-3000 (45-50 минути)" : "напр. 60"}
           {...register('executionTime', {
             required: 'Времето за изпълнение е задължително',
             valueAsNumber: true,
@@ -179,6 +190,11 @@ const AsanaForm = ({ asana, onSave, onCancel }) => {
         />
         {errors.executionTime && (
           <span className="field-error">{errors.executionTime.message}</span>
+        )}
+        {isCosmoenergetics && selectedCourseId && (
+          <p style={{ marginTop: '8px', fontSize: '13px', color: '#666', fontStyle: 'italic' }}>
+            За космоенергетика: сеансите обикновено траят 45-50 минути. Въведете времето в секунди (2700-3000 сек = 45-50 мин).
+          </p>
         )}
       </div>
 

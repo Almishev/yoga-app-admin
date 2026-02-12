@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { getAllCourses, deleteCourse } from '../services/courseService';
 import './CourseList.css';
 
 const CourseList = ({ onEdit, onCreateNew }) => {
+  const navigate = useNavigate();
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -67,19 +69,40 @@ const CourseList = ({ onEdit, onCreateNew }) => {
       ) : (
         <div className="course-grid">
           {courses.map((course) => (
-            <div key={course.id} className="course-card">
+            <div
+              key={course.id}
+              className="course-card course-card-clickable"
+              onClick={() => navigate(`/courses/${course.id}/asanas`)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  navigate(`/courses/${course.id}/asanas`);
+                }
+              }}
+            >
               <div className="course-content">
                 <h3>{course.title}</h3>
                 <p className="course-description">{course.description}</p>
                 <div className="course-meta">
-                  <span className="meta-item">⏱ {course.duration}</span>
-                  <span className="meta-item">
-                    {course.difficulty === 'beginner' && '🟢 Начинаещ'}
-                    {course.difficulty === 'intermediate' && '🟡 Средно'}
-                    {course.difficulty === 'advanced' && '🔴 Напреднал'}
-                  </span>
+                  <span className="meta-item">⏱ {typeof course.duration === 'number' ? `${course.duration} мин` : course.duration}</span>
+                  {course.category === 'yoga' && (
+                    <span className="meta-item">
+                      {course.difficulty === 'beginner' && '🟢 Начинаещ'}
+                      {course.difficulty === 'intermediate' && '🟡 Средно'}
+                      {course.difficulty === 'advanced' && '🔴 Напреднал'}
+                    </span>
+                  )}
+                  {course.style && (
+                    <span className="meta-item">🎨 {course.style}</span>
+                  )}
+                  {course.focus && (
+                    <span className="meta-item">🎯 {course.focus}</span>
+                  )}
                 </div>
-                <div className="course-actions">
+                <p className="course-card-hint">Преглед на асани →</p>
+                <div className="course-actions" onClick={(e) => e.stopPropagation()}>
                   <button
                     onClick={() => onEdit(course)}
                     className="btn-edit"

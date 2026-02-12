@@ -1,43 +1,21 @@
-import { useState, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
+import { useState } from 'react';
 import { createCourse, updateCourse } from '../services/courseService';
+import YogaCourseForm from './YogaCourseForm';
+import CosmoenergeticsCourseForm from './CosmoenergeticsCourseForm';
 import './CourseForm.css';
 
 const CourseForm = ({ course, onSave, onCancel }) => {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState(course?.category || 'yoga');
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    reset,
-  } = useForm({
-    defaultValues: course || {
-      title: '',
-      description: '',
-      duration: '',
-      difficulty: 'beginner',
-    },
-  });
+  const category = course?.category || selectedCategory;
 
-  useEffect(() => {
-    if (course) {
-      reset(course);
-    }
-  }, [course, reset]);
-
-  const onSubmit = async (data) => {
+  const handleFormSubmit = async (courseData) => {
     setSaving(true);
     setError(null);
 
     try {
-      const courseData = {
-        ...data,
-        createdAt: course?.createdAt || new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-
       if (course?.id) {
         await updateCourse(course.id, courseData);
       } else {
@@ -53,73 +31,82 @@ const CourseForm = ({ course, onSave, onCancel }) => {
     }
   };
 
-  return (
-    <form onSubmit={handleSubmit(onSubmit)} className="course-form">
-      <h2>{course ? 'Редактиране на курс' : 'Създаване на нов курс'}</h2>
-
-      {error && <div className="error-message">{error}</div>}
-
-      <div className="form-group">
-        <label htmlFor="title">Заглавие *</label>
-        <input
-          id="title"
-          type="text"
-          {...register('title', { required: 'Заглавието е задължително' })}
-          className={errors.title ? 'error' : ''}
-        />
-        {errors.title && <span className="field-error">{errors.title.message}</span>}
-      </div>
-
-      <div className="form-group">
-        <label htmlFor="description">Описание *</label>
-        <textarea
-          id="description"
-          rows="4"
-          {...register('description', { required: 'Описанието е задължително' })}
-          className={errors.description ? 'error' : ''}
-        />
-        {errors.description && (
-          <span className="field-error">{errors.description.message}</span>
-        )}
-      </div>
-
-      <div className="form-row">
+  if (!course) {
+    return (
+      <div className="course-form">
+        <h2>Създаване на нов курс</h2>
+        
         <div className="form-group">
-          <label htmlFor="duration">Продължителност *</label>
-          <input
-            id="duration"
-            type="text"
-            placeholder="напр. 30 минути"
-            {...register('duration', { required: 'Продължителността е задължителна' })}
-            className={errors.duration ? 'error' : ''}
-          />
-          {errors.duration && (
-            <span className="field-error">{errors.duration.message}</span>
-          )}
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="difficulty">Ниво на трудност *</label>
+          <label htmlFor="category-select">Избери категория *</label>
           <select
-            id="difficulty"
-            {...register('difficulty', { required: true })}
+            id="category-select"
+            value={selectedCategory}
+            onChange={(e) => setSelectedCategory(e.target.value)}
+            style={{
+              width: '100%',
+              padding: '8px 12px',
+              fontSize: '16px',
+              border: '1px solid #ddd',
+              borderRadius: '4px',
+              marginTop: '8px',
+            }}
           >
-            <option value="beginner">Начинаещ</option>
-            <option value="intermediate">Средно</option>
-            <option value="advanced">Напреднал</option>
+            <option value="yoga">🧘‍♀️ Йога</option>
+            <option value="cosmoenergetics">🌌 Космоенергетика</option>
           </select>
         </div>
-      </div>
 
-      <div className="form-actions">
-        <button type="button" onClick={onCancel} disabled={saving}>
-          Отказ
-        </button>
-        <button type="submit" disabled={saving}>
-          {saving ? 'Запазване...' : course ? 'Обнови' : 'Създай'}
-        </button>
+        {selectedCategory === 'cosmoenergetics' ? (
+          <CosmoenergeticsCourseForm
+            course={null}
+            onSave={handleFormSubmit}
+            onCancel={onCancel}
+            saving={saving}
+            error={error}
+            setError={setError}
+          />
+        ) : (
+          <YogaCourseForm
+            course={null}
+            onSave={handleFormSubmit}
+            onCancel={onCancel}
+            saving={saving}
+            error={error}
+            setError={setError}
+          />
+        )}
       </div>
-    </form>
+    );
+  }
+
+  if (category === 'cosmoenergetics') {
+    return (
+      <div className="course-form">
+        <h2>Редактиране на курс</h2>
+        <CosmoenergeticsCourseForm
+          course={course}
+          onSave={handleFormSubmit}
+          onCancel={onCancel}
+          saving={saving}
+          error={error}
+          setError={setError}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div className="course-form">
+      <h2>Редактиране на курс</h2>
+      <YogaCourseForm
+        course={course}
+        onSave={handleFormSubmit}
+        onCancel={onCancel}
+        saving={saving}
+        error={error}
+        setError={setError}
+      />
+    </div>
   );
 };
 

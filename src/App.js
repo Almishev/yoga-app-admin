@@ -5,6 +5,7 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Courses from './pages/Courses';
 import Asanas from './pages/Asanas';
+import CourseAsanas from './pages/CourseAsanas';
 import './App.css';
 
 function App() {
@@ -27,6 +28,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <Courses />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/courses/:courseId/asanas"
+              element={
+                <ProtectedRoute>
+                  <CourseAsanas />
                 </ProtectedRoute>
               }
             />

@@ -33,17 +33,23 @@ const AsanaList = ({ onEdit, onCreateNew }) => {
     loadData();
   }, []);
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('Сигурни ли сте, че искате да изтриете тази асана?')) {
+  const handleDelete = async (asana) => {
+    const courseCategory = getCourseCategory(asana.courseId);
+    const itemLabel = courseCategory === 'cosmoenergetics' ? 'сеанс' : 'асана';
+    
+    if (!window.confirm(`Сигурни ли сте, че искате да изтриете този ${itemLabel}?`)) {
       return;
     }
 
     try {
-      setDeletingId(id);
-      await deleteAsana(id);
+      setDeletingId(asana.id);
+      await deleteAsana(asana.id);
       await loadData();
     } catch (err) {
-      alert(err.message || 'Грешка при изтриване на асаната');
+      const errorMessage = courseCategory === 'cosmoenergetics' 
+        ? `Грешка при изтриване на сеанса: ${err.message}` 
+        : `Грешка при изтриване на асаната: ${err.message}`;
+      alert(err.message || errorMessage);
       console.error('Delete error:', err);
     } finally {
       setDeletingId(null);
@@ -53,6 +59,21 @@ const AsanaList = ({ onEdit, onCreateNew }) => {
   const getCourseName = (courseId) => {
     const course = courses.find((c) => c.id === courseId);
     return course?.title || 'Неизвестен курс';
+  };
+
+  const getCourseCategory = (courseId) => {
+    const course = courses.find((c) => c.id === courseId);
+    return course?.category || 'yoga';
+  };
+
+  const getItemLabel = (courseId) => {
+    const category = getCourseCategory(courseId);
+    return category === 'cosmoenergetics' ? 'сеанси' : 'асани';
+  };
+
+  const getItemLabelSingular = (courseId) => {
+    const category = getCourseCategory(courseId);
+    return category === 'cosmoenergetics' ? 'сеанс' : 'асана';
   };
 
   const filteredAsanas =
@@ -68,10 +89,18 @@ const AsanaList = ({ onEdit, onCreateNew }) => {
     return <div className="error">{error}</div>;
   }
 
+  const selectedCourseData = selectedCourse !== 'all' 
+    ? courses.find(c => c.id === selectedCourse) 
+    : null;
+  const listLabel = selectedCourseData?.category === 'cosmoenergetics' ? 'Сеанси' : 'Асани';
+  const newItemLabel = selectedCourseData?.category === 'cosmoenergetics' ? 'Нов сеанс' : 'Нова асана';
+  const emptyLabel = selectedCourseData?.category === 'cosmoenergetics' ? 'сеанси' : 'асани';
+  const emptyLabelSingular = selectedCourseData?.category === 'cosmoenergetics' ? 'сеанс' : 'асана';
+
   return (
     <div className="asana-list">
       <div className="asana-list-header">
-        <h2>Асани ({filteredAsanas.length})</h2>
+        <h2>{listLabel} ({filteredAsanas.length})</h2>
         <div className="header-actions">
           <select
             value={selectedCourse}
@@ -86,7 +115,7 @@ const AsanaList = ({ onEdit, onCreateNew }) => {
             ))}
           </select>
           <button onClick={onCreateNew} className="btn-primary">
-            + Нова асана
+            + {newItemLabel}
           </button>
         </div>
       </div>
@@ -95,8 +124,8 @@ const AsanaList = ({ onEdit, onCreateNew }) => {
         <div className="empty-state">
           <p>
             {selectedCourse === 'all'
-              ? 'Няма асани. Създайте първата асана!'
-              : 'Няма асани за този курс.'}
+              ? `Няма ${emptyLabel}. Създайте първия ${emptyLabelSingular}!`
+              : `Няма ${emptyLabel} за този курс.`}
           </p>
         </div>
       ) : (
@@ -115,7 +144,11 @@ const AsanaList = ({ onEdit, onCreateNew }) => {
                 </div>
                 <p className="asana-description">{asana.description}</p>
                 <div className="asana-meta">
-                  <span className="meta-item">⏱ {asana.executionTime} сек</span>
+                  <span className="meta-item">
+                    ⏱ {getCourseCategory(asana.courseId) === 'cosmoenergetics' 
+                      ? `${Math.round(asana.executionTime / 60)} мин` 
+                      : `${asana.executionTime} сек`}
+                  </span>
                 </div>
                 {asana.benefits && (
                   <div className="asana-benefits">
@@ -140,7 +173,7 @@ const AsanaList = ({ onEdit, onCreateNew }) => {
                     Редактирай
                   </button>
                   <button
-                    onClick={() => handleDelete(asana.id)}
+                    onClick={() => handleDelete(asana)}
                     className="btn-delete"
                     disabled={deletingId === asana.id}
                   >
